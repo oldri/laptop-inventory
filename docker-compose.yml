@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  backend:
+    platform: linux/arm64/v8
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/laptop_inventory
+      SPRING_DATASOURCE_USERNAME: oldri
+      SPRING_DATASOURCE_PASSWORD: oldri
+    depends_on:
+      - db
+
+  frontend:
+    platform: linux/arm64/v8
+    build: ./frontend
+    ports:
+      - "5173:5173"  
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev  
+    environment:
+      - VITE_API_URL=http://localhost:8080
+
+  db:
+    platform: linux/arm64/v8
+    image: postgres:14
+    environment:
+      POSTGRES_DB: laptop_inventory
+      POSTGRES_USER: oldri
+      POSTGRES_PASSWORD: oldri
+    ports:
+      - "5432:5432"

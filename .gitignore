@@ -1,0 +1,23 @@
+# Ignore node_modules for frontend
+/frontend/node_modules/
+
+# Ignore build directories
+/backend/build/
+/frontend/dist/
+
+# Ignore environment files
+.env
+.env.local
+.env.dev
+.env.prod
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# Ignore log files
+*.log
+
+# Ignore Docker files
+/backend/target/
+/frontend/target/
