@@ -27,15 +27,19 @@ dependencies {
     // Database and Flyway
     implementation("org.postgresql:postgresql") 
     // JWT Authentication
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")  // API interface for JWT (simpler usage)
-    implementation("io.jsonwebtoken:jjwt-impl:0.11.5")  // JWT implementation
-    implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")  // Jackson support for JSON
-
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5") 
+    implementation("io.jsonwebtoken:jjwt-impl:0.11.5")  
+    implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")  
+    
     // SpringDoc for OpenAPI Documentation (optional)
     implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
 
     // Flyway for database migration
     implementation("org.flywaydb:flyway-core")
+
+    // Lombok
+    implementation("org.projectlombok:lombok:1.18.24")
+    annotationProcessor("org.projectlombok:lombok:1.18.24")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
