@@ -21,8 +21,6 @@ The **Device Management System** is a web-based platform designed to help organi
 -   [Contributing](#contributing)
 -   [License](#license)
 
-Thank you for sharing the updated models and enums! I’ll now update the `README.md` to reflect the new fields and attributes. Here’s the revised version:
-
 ---
 
 ## User Roles and Access
@@ -465,13 +463,17 @@ Thank you for sharing the updated models and enums! I’ll now update the `READM
 ├── /frontend # Frontend code
 │ ├── /public # Static files
 │ ├── /src
+│ │ ├── /assets # App assets
+│ │ ├── /types # Types for data, API responses, etc
 │ │ ├── /components # Reusable React components
 │ │ │ └── /common # Common components shared across the app
 │ │ ├── /pages # Page components
+│ │ ├── /routes # Route components
+│ │ ├── /layouts # Layout components
 │ │ ├── /store # Redux store and slices
+│ │ │ └── auth # Auth store
 │ │ ├── /services # API services
 │ │ ├── /utils # Utility functions
-│ │ ├── /dtos # Data Transfer Objects for API responses
 │ │ ├── /config # Configuration files
 │ │ │ ├── env.local # Local environment variables
 │ │ │ ├── env.dev # Development environment variables

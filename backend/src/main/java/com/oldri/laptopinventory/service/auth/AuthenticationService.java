@@ -4,15 +4,14 @@ import com.oldri.laptopinventory.dto.auth.AuthenticationRequest;
 import com.oldri.laptopinventory.dto.auth.AuthenticationResponse;
 import com.oldri.laptopinventory.dto.user.UserCreateDTO;
 import com.oldri.laptopinventory.dto.user.UserDTO;
-import com.oldri.laptopinventory.exception.EmailAlreadyExistsException;
-import com.oldri.laptopinventory.exception.InvalidPasswordException;
-import com.oldri.laptopinventory.exception.UsernameAlreadyExistsException;
+import com.oldri.laptopinventory.exception.AuthenticationException;
 import com.oldri.laptopinventory.model.User;
 import com.oldri.laptopinventory.repository.UserRepository;
 import com.oldri.laptopinventory.security.jwt.JwtService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,24 +27,33 @@ public class AuthenticationService {
         private final UserDetailsService userDetailsService;
 
         public AuthenticationResponse authenticate(AuthenticationRequest request) {
-                authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(
-                                                request.getUsername(),
-                                                request.getPassword()));
+                try {
+                        authenticationManager.authenticate(
+                                        new UsernamePasswordAuthenticationToken(
+                                                        request.getUsername(),
+                                                        request.getPassword()));
 
-                User user = userRepository.findByUsername(request.getUsername())
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                        User user = userRepository.findByUsername(request.getUsername())
+                                        .orElseThrow(() -> new AuthenticationException(
+                                                        AuthenticationException.ErrorType.USER_NOT_FOUND,
+                                                        "User not found"));
 
-                user.updateLastLoginTime();
-                user.resetFailedAttempts();
-                userRepository.save(user);
+                        user.updateLastLoginTime();
+                        user.resetFailedAttempts();
+                        userRepository.save(user);
 
-                String jwtToken = jwtService.generateToken(userDetailsService.loadUserByUsername(user.getUsername()));
+                        String jwtToken = jwtService
+                                        .generateToken(userDetailsService.loadUserByUsername(user.getUsername()));
 
-                return AuthenticationResponse.builder()
-                                .token(jwtToken)
-                                .user(convertToUserDTO(user))
-                                .build();
+                        return AuthenticationResponse.builder()
+                                        .token(jwtToken)
+                                        .user(convertToUserDTO(user))
+                                        .build();
+                } catch (BadCredentialsException e) {
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.INVALID_CREDENTIALS,
+                                        "Invalid username or password");
+                }
         }
 
         public AuthenticationResponse register(UserCreateDTO userCreateDTO) {
@@ -75,11 +83,13 @@ public class AuthenticationService {
 
         private void validateNewUser(UserCreateDTO userCreateDTO) {
                 if (userRepository.existsByUsername(userCreateDTO.getUsername())) {
-                        throw new UsernameAlreadyExistsException(
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.USERNAME_ALREADY_EXISTS,
                                         "Username '" + userCreateDTO.getUsername() + "' is already taken");
                 }
                 if (userRepository.existsByEmail(userCreateDTO.getEmail())) {
-                        throw new EmailAlreadyExistsException(
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.EMAIL_ALREADY_EXISTS,
                                         "Email '" + userCreateDTO.getEmail() + "' is already registered");
                 }
                 validatePassword(userCreateDTO.getPassword());
@@ -87,19 +97,29 @@ public class AuthenticationService {
 
         private void validatePassword(String password) {
                 if (password.length() < 8) {
-                        throw new InvalidPasswordException("Password must be at least 8 characters long");
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.INVALID_PASSWORD,
+                                        "Password must be at least 8 characters long");
                 }
                 if (!password.matches(".*[A-Z].*")) {
-                        throw new InvalidPasswordException("Password must contain at least one uppercase letter");
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.INVALID_PASSWORD,
+                                        "Password must contain at least one uppercase letter");
                 }
                 if (!password.matches(".*[a-z].*")) {
-                        throw new InvalidPasswordException("Password must contain at least one lowercase letter");
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.INVALID_PASSWORD,
+                                        "Password must contain at least one lowercase letter");
                 }
                 if (!password.matches(".*\\d.*")) {
-                        throw new InvalidPasswordException("Password must contain at least one number");
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.INVALID_PASSWORD,
+                                        "Password must contain at least one number");
                 }
                 if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
-                        throw new InvalidPasswordException("Password must contain at least one special character");
+                        throw new AuthenticationException(
+                                        AuthenticationException.ErrorType.INVALID_PASSWORD,
+                                        "Password must contain at least one special character");
                 }
         }
 
@@ -117,4 +137,3 @@ public class AuthenticationService {
                                 .build();
         }
 }
-
