@@ -428,6 +428,7 @@ Thank you for sharing the updated models and enums! I’ll now update the `READM
 │ ├── /src
 │ │ ├── /main
 │ │ │ ├── /java/com/yourcompany/laptopinventory
+│ │ │ │ ├── /exception # Exceptions
 │ │ │ │ ├── /controller # REST controllers
 │ │ │ │ ├── /service # Service layer
 │ │ │ │ ├── /repository # Repository layer
@@ -437,16 +438,24 @@ Thank you for sharing the updated models and enums! I’ll now update the `READM
 │ │ │ │ │ ├── /local # Local environment config
 │ │ │ │ │ ├── /dev # Development environment config
 │ │ │ │ │ └── /prod # Production environment config
-│ │ │ │ ├── /security # Security configuration
+│ │ │ │ ├── /security # Security files
+│ │ │ │ │ ├── /config # Security config
+│ │ │ │ │ └── /jwt # Jwt config
 │ │ │ │ └── Application.java # Main application class
 │ │ │ └── /resources
-│ │ │ ├── application.properties # Application properties
-│ │ │ ├── application-local.properties # Local environment properties
-│ │ │ ├── application-dev.properties # Development environment properties
-│ │ │ ├── application-prod.properties # Production environment properties
-│ │ │ └── logback.xml # Logback configuration
+│ │ │ │ ├── /db # Database files
+│ │ │ │ │ └── /migration # Migration files
+│ │ │ │ ├── V1**create_users_table.sql
+│ │ │ │ ├── V2**create_devices_table.sql
+│ │ │ │ ├── V3**create_warranties_table.sql
+│ │ │ │ ├── V4**create_device_requests_table.sql
+│ │ │ │ └── V5\_\_insert_super_admin_user.sql
+│ │ │ │ ├── application.properties # Application properties
+│ │ │ │ ├── application-local.properties # Local environment properties
+│ │ │ │ ├── application-dev.properties # Development environment properties
+│ │ │ │ ├── application-prod.properties # Production environment properties
+│ │ │ │ └── logback.xml # Logback configuration
 │ │ └── /test
-│ │ └── /java/com/yourcompany/laptopinventory
 │ │ ├── /controller # Controller tests
 │ │ ├── /service # Service tests
 │ │ └── /repository # Repository tests
@@ -486,6 +495,8 @@ Thank you for sharing the updated models and enums! I’ll now update the `READM
 │ ├── /ci-cd # CI/CD pipeline configurations
 │ └── docker-compose.yml # Docker Compose configuration
 │
+├── .env # Environment variables
+├── .env.example # Example environment variables
 ├── .env.local # Local environment variables
 ├── .env.dev # Development environment variables
 ├── .env.prod # Production environment variables
@@ -512,30 +523,91 @@ Thank you for sharing the updated models and enums! I’ll now update the `READM
     ```
 
 2. **Set up environment variables**:
-   Copy .env.example to .env.local and update the values.
+
+    - Copy `.env.example` to `.env.local` and update the values:
+        ```bash
+        cp .env.example .env.local
+        ```
+    - Ensure the following variables are set in `.env.local`:
+        ```bash
+        POSTGRES_DB=laptop_inventory
+        POSTGRES_USER=oldri
+        POSTGRES_PASSWORD=oldri
+        SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/laptop_inventory
+        SPRING_DATASOURCE_USERNAME=oldri
+        SPRING_DATASOURCE_PASSWORD=oldri
+        SPRING_FLYWAY_ENABLED=true
+        VITE_API_URL=http://localhost:8080
+        ```
 
 3. **Set up the backend**:
-   cd backend
-   ./gradlew build # Builds the backend
+
+    ```bash
+    cd backend
+    ./gradlew build # Builds the backend
+    ```
 
 4. **Set up the frontend**:
-   cd frontend
-   npm install # Installs dependencies
 
-5. **Run the application**:
-   docker-compose down -v
-   docker-compose up --build
+    ```bash
+    cd frontend
+    npm install # Installs dependencies
+    ```
 
-6. **Access the application**:
-   Frontend: http://localhost:5173
-   Backend: http://localhost:8080
-   Swagger UI: http://localhost:8080/swagger-ui/index.html
+5. **Database Migrations**:
+   This project uses **Flyway** for database migrations. Migrations are located in `src/main/resources/db/migration`.
+
+    #### Running Migrations
+
+    Migrations are applied automatically when the backend service starts. To apply migrations manually, you can use the following command:
+
+    ```bash
+    cd backend
+    ./gradlew flywayMigrate
+    ```
+
+    #### Verifying Migrations
+
+    - Check the logs for Flyway messages:
+        ```bash
+        docker-compose logs backend
+        ```
+    - Connect to the database and verify the tables:
+        ```bash
+        docker exec -it <db_container_id> psql -U oldri -d laptop_inventory
+        \dt
+        ```
+
+    #### Adding New Migrations
+
+    - Create a new SQL script in `src/main/resources/db/migration` following the naming convention:
+        ```
+        V<version>__<description>.sql
+        ```
+    - Restart the backend service to apply the new migration:
+        ```bash
+        docker-compose up --build backend
+        ```
+
+6. **Run the application**:
+
+    ```bash
+    docker-compose down -v
+    docker-compose up --build
+    ```
+
+7. **Access the application**:
+    - **Frontend**: [http://localhost:5173](http://localhost:5173)
+    - **Backend**: [http://localhost:8080](http://localhost:8080)
+    - **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+---
 
 ## Customization
 
--   **Environment Variables**: Ensure `.env.local`, `.env.dev`, `.env.prod` are configured.
+-   **Environment Variables**: Ensure `.env.local`, `.env.dev`, and `.env.prod` are configured.
 -   **CI/CD**: GitHub Actions or another tool can automate testing and deployment.
--   **Database Migrations**: If using Flyway/Liquibase, ensure they run before starting the app.
+-   **Database Migrations**: Flyway migrations are applied automatically when the backend starts.
 
 ---
 

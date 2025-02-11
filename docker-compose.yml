@@ -6,12 +6,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/laptop_inventory
-      SPRING_DATASOURCE_USERNAME: oldri
-      SPRING_DATASOURCE_PASSWORD: oldri
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_SERVLET_CONTEXT_PATH=/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/laptop_inventory
+    volumes:
+      - ./backend/src/main/resources/db/migration:/app/db/migration
+    env_file:
+      - .env
     depends_on:
-      - db
-
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - laptop-network
+      
   frontend:
     platform: linux/arm64/v8
     build: ./frontend
@@ -21,15 +33,29 @@ services:
       - ./frontend:/app
       - /app/node_modules
     command: npm run dev  
-    environment:
-      - VITE_API_URL=http://localhost:8080
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - laptop-network
 
   db:
     platform: linux/arm64/v8
     image: postgres:14
-    environment:
-      POSTGRES_DB: laptop_inventory
-      POSTGRES_USER: oldri
-      POSTGRES_PASSWORD: oldri
+    env_file:
+      - .env
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - laptop-network
+
+networks:
+  laptop-network:
+    driver: bridge

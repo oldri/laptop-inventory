@@ -3,12 +3,11 @@ package com.oldri.laptopinventory.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.Id;
-
 import com.oldri.laptopinventory.model.enums.RequestPriority;
 import com.oldri.laptopinventory.model.enums.RequestStatus;
 import com.oldri.laptopinventory.model.enums.RequestType;
 
+import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

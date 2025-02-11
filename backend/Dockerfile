@@ -1,5 +1,11 @@
-FROM --platform=linux/arm64/v8 openjdk:17-slim
+FROM eclipse-temurin:17-jdk as builder
 WORKDIR /app
-COPY build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
+COPY . .
+RUN ./gradlew bootJar
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder /app/src/main/resources/db/migration /app/db/migration
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

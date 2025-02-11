@@ -5,12 +5,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.annotation.Id;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.oldri.laptopinventory.model.enums.DeviceCondition;
 import com.oldri.laptopinventory.model.enums.DeviceLocation;
 import com.oldri.laptopinventory.model.enums.DeviceStatus;
 
+import jakarta.persistence.Id;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,7 +32,6 @@ import lombok.Data;
 @Table(name = "devices")
 @Data
 public class Device {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -61,6 +60,7 @@ public class Device {
     private User assignedUser; // Nullable for unassigned devices
 
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Warranty> warranties = new ArrayList<>();
 
     @Column(name = "purchase_date")

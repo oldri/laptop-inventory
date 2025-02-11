@@ -3,10 +3,9 @@ package com.oldri.laptopinventory.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.Id;
-
 import com.oldri.laptopinventory.model.enums.WarrantyType;
 
+import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

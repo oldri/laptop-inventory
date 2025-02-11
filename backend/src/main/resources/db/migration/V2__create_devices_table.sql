@@ -1,0 +1,13 @@
+CREATE TABLE devices (
+    id BIGSERIAL PRIMARY KEY,
+    serial_number VARCHAR(50) NOT NULL UNIQUE,
+    manufacturer VARCHAR(100) NOT NULL,
+    model_name VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE',
+    assigned_user_id BIGINT REFERENCES users(id), -- Changed to BIGINT
+    purchase_date DATE NOT NULL,
+    condition VARCHAR(20) NOT NULL DEFAULT 'NEW',
+    location VARCHAR(20) NOT NULL DEFAULT 'WAREHOUSE',
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
