@@ -1,19 +1,14 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-    loginStart,
-    loginSuccess,
-    loginFailure,
-} from "../store/auth/authSlice";
-import { authService } from "../services/auth.service";
+import { login } from "../store/auth/authSlice";
 import type { RootState } from "../store";
+import type { AppDispatch } from "../store";
 
 export const Login = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { loading, error } = useSelector((state: RootState) => state.auth);
-
     const [credentials, setCredentials] = useState({
         username: "",
         password: "",
@@ -21,20 +16,9 @@ export const Login = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch(loginStart());
-
-        try {
-            const response = await authService.login(credentials);
-            dispatch(
-                loginSuccess({ user: response.user, token: response.token })
-            );
-            navigate("/dashboard");
-        } catch (err) {
-            dispatch(
-                loginFailure(
-                    err instanceof Error ? err.message : "Login failed"
-                )
-            );
+        const result = await dispatch(login(credentials));
+        if (login.fulfilled.match(result)) {
+            navigate("/");
         }
     };
 
@@ -44,13 +28,11 @@ export const Login = () => {
                 <h2 className="text-2xl font-semibold text-center text-gray-900">
                     Sign in
                 </h2>
-
                 {error && (
                     <div className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md">
                         {error}
                     </div>
                 )}
-
                 <form onSubmit={handleSubmit} className="space-y-6 mt-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -69,7 +51,6 @@ export const Login = () => {
                             }
                         />
                     </div>
-
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
                             Password
@@ -87,7 +68,6 @@ export const Login = () => {
                             }
                         />
                     </div>
-
                     <button
                         type="submit"
                         disabled={loading}

@@ -1,7 +1,23 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "../../types/auth";
-import { authService } from "../../services/auth.service";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { User, AuthRequest, AuthResponse } from "../../types/auth";
+import authService from "../../services/auth.service";
 
+// Async thunk for login
+export const login = createAsyncThunk(
+    "auth/login",
+    async (credentials: AuthRequest, { rejectWithValue }) => {
+        try {
+            const response = await authService.login(credentials);
+            return response;
+        } catch (error) {
+            return rejectWithValue(
+                error instanceof Error ? error.message : "Login failed"
+            );
+        }
+    }
+);
+
+// Define the initial state
 interface AuthState {
     user: User | null;
     token: string | null;
@@ -18,41 +34,44 @@ const initialState: AuthState = {
     error: null,
 };
 
+// Create the auth slice
 const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        loginStart: (state) => {
-            state.loading = true;
-            state.error = null;
-        },
-        loginSuccess: (
-            state,
-            action: PayloadAction<{ user: User; token: string }>
-        ) => {
-            state.isAuthenticated = true;
-            state.user = action.payload.user;
-            state.token = action.payload.token;
-            state.loading = false;
-
-            localStorage.setItem("user", JSON.stringify(action.payload.user));
-            localStorage.setItem("token", action.payload.token);
-        },
-        loginFailure: (state, action: PayloadAction<string>) => {
-            state.loading = false;
-            state.error = action.payload;
-        },
         logout: (state) => {
             state.user = null;
             state.token = null;
             state.isAuthenticated = false;
-
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
+            authService.logout();
         },
+        clearError: (state) => {
+            state.error = null;
+        },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(login.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(
+                login.fulfilled,
+                (state, action: PayloadAction<AuthResponse>) => {
+                    state.isAuthenticated = true;
+                    state.user = action.payload.user;
+                    state.token = action.payload.token;
+                    state.loading = false;
+                    state.error = null;
+                }
+            )
+            .addCase(login.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            });
     },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout } =
-    authSlice.actions;
+// Export actions and reducer
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

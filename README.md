@@ -428,7 +428,11 @@ The **Device Management System** is a web-based platform designed to help organi
 │ │ │ ├── /java/com/yourcompany/laptopinventory
 │ │ │ │ ├── /exception # Exceptions
 │ │ │ │ ├── /controller # REST controllers
+│ │ │ │ │ ├── /auth # Auth controllers
+│ │ │ │ │ └── /device # Device controllers
 │ │ │ │ ├── /service # Service layer
+│ │ │ │ │ ├── /auth # Auth services
+│ │ │ │ │ └── /device # Device services
 │ │ │ │ ├── /repository # Repository layer
 │ │ │ │ ├── /model # Entity models
 │ │ │ │ ├── /dto # Data Transfer Objects
@@ -437,17 +441,20 @@ The **Device Management System** is a web-based platform designed to help organi
 │ │ │ │ │ ├── /dev # Development environment config
 │ │ │ │ │ └── /prod # Production environment config
 │ │ │ │ ├── /security # Security files
+│ │ │ │ │ ├── /utils # Utils config
 │ │ │ │ │ ├── /config # Security config
 │ │ │ │ │ └── /jwt # Jwt config
 │ │ │ │ └── Application.java # Main application class
 │ │ │ └── /resources
 │ │ │ │ ├── /db # Database files
 │ │ │ │ │ └── /migration # Migration files
-│ │ │ │ ├── V1**create_users_table.sql
-│ │ │ │ ├── V2**create_devices_table.sql
-│ │ │ │ ├── V3**create_warranties_table.sql
-│ │ │ │ ├── V4**create_device_requests_table.sql
-│ │ │ │ └── V5\_\_insert_super_admin_user.sql
+│ │ │ │ ├── V1__create_users_table.sql
+│ │ │ │ ├── V2__create_devices_table.sql
+│ │ │ │ ├── V3__create_warranties_table.sql
+│ │ │ │ ├── V4__create_device_requests_table.sql
+│ │ │ │ ├── V5__insert_super_admin_user.sql
+│ │ │ │ ├── V6__insert_dummy_data_into_devices_table.sql
+│ │ │ │ └── V7__insert_warranty_data_into_warranty_table.sql
 │ │ │ │ ├── application.properties # Application properties
 │ │ │ │ ├── application-local.properties # Local environment properties
 │ │ │ │ ├── application-dev.properties # Development environment properties
@@ -466,12 +473,15 @@ The **Device Management System** is a web-based platform designed to help organi
 │ │ ├── /assets # App assets
 │ │ ├── /types # Types for data, API responses, etc
 │ │ ├── /components # Reusable React components
+│ │ │ ├── device # Device components
 │ │ │ └── /common # Common components shared across the app
 │ │ ├── /pages # Page components
 │ │ ├── /routes # Route components
 │ │ ├── /layouts # Layout components
 │ │ ├── /store # Redux store and slices
-│ │ │ └── auth # Auth store
+│ │ │ ├── auth # Auth store
+│ │ │ ├── device # Device store
+│ │ │ └── index.ts
 │ │ ├── /services # API services
 │ │ ├── /utils # Utility functions
 │ │ ├── /config # Configuration files

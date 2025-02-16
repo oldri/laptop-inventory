@@ -10,7 +10,7 @@ export interface User {
     firstName: string;
     lastName: string;
     phoneNumber: string;
-    role: "SUPER_ADMIN" | "ADMIN" | "EMPLOYEE";
+    role: "ROLE_SUPER_ADMIN" | "ROLE_ADMIN" | "ROLE_EMPLOYEE";
     department: string;
     isActive: boolean;
 }

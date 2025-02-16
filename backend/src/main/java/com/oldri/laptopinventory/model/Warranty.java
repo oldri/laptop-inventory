@@ -3,6 +3,7 @@ package com.oldri.laptopinventory.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.oldri.laptopinventory.model.enums.WarrantyType;
 
 import jakarta.persistence.Id;
@@ -19,11 +20,17 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "warranties")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Warranty {
 
     @Id
@@ -32,6 +39,7 @@ public class Warranty {
 
     @ManyToOne
     @JoinColumn(name = "device_id", nullable = false)
+    @JsonIgnore
     private Device device;
 
     @Column(name = "warranty_id", length = 50, nullable = false)

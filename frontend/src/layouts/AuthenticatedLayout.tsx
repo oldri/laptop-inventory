@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Outlet } from "react-router-dom";
 import { logout } from "../store/auth/authSlice";
-import { authService } from "../services/auth.service";
+import authService from "../services/auth.service";
 import type { RootState } from "../store";
 
 export const AuthenticatedLayout = () => {
@@ -14,8 +14,7 @@ export const AuthenticatedLayout = () => {
         dispatch(logout());
         navigate("/login");
     };
-    console.log("user", user);
-    
+
     if (!user) {
         navigate("/login");
         return null;

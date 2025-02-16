@@ -7,7 +7,7 @@ INSERT INTO users (
     'Super',
     'Admin',
     '+1234567890',
-    'SUPER_ADMIN',
+    'ROLE_SUPER_ADMIN',
     'MANAGEMENT',
     TRUE
 );

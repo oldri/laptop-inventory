@@ -1,6 +1,7 @@
 package com.oldri.laptopinventory.dto.warranty;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,6 +25,8 @@ public class WarrantyDTO {
     private LocalDate endDate;
     private WarrantyType type;
     private String description;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 
     @JsonProperty("status")
     public WarrantyStatus getStatus() {

@@ -20,11 +20,13 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 @Entity
 @Table(name = "device_requests")
 @Data
+@Builder
 public class DeviceRequest {
 
     @Id

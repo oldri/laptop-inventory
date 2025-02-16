@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 interface ProtectedRouteProps {
     children: ReactNode;
-    allowedRoles?: Array<"SUPER_ADMIN" | "ADMIN" | "EMPLOYEE">;
+    allowedRoles?: Array<"ROLE_SUPER_ADMIN" | "ROLE_ADMIN" | "ROLE_EMPLOYEE">;
 }
 
 export const ProtectedRoute = ({

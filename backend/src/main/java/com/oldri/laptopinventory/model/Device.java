@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.oldri.laptopinventory.model.enums.DeviceCondition;
 import com.oldri.laptopinventory.model.enums.DeviceLocation;
 import com.oldri.laptopinventory.model.enums.DeviceStatus;
@@ -16,6 +15,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
@@ -26,11 +26,17 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "devices")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Device {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,14 +59,13 @@ public class Device {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private DeviceStatus status = DeviceStatus.AVAILABLE; // Default to AVAILABLE
+    private DeviceStatus status = DeviceStatus.AVAILABLE;
 
     @ManyToOne
     @JoinColumn(name = "assigned_user_id")
-    private User assignedUser; // Nullable for unassigned devices
+    private User assignedUser;
 
-    @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Warranty> warranties = new ArrayList<>();
 
     @Column(name = "purchase_date")

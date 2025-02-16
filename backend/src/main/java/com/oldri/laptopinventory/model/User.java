@@ -121,7 +121,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        // Only add ROLE_ if not already present
+        String roleName = role.name().startsWith("ROLE_") ? role.name() : "ROLE_" + role.name();
+        return List.of(new SimpleGrantedAuthority(roleName));
     }
 
     @Override
