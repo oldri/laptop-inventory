@@ -6,13 +6,25 @@ import {
     WarrantyCreateDTO,
     DeviceSearchParams,
     Page,
+    DeviceLocation,
+    DeviceStatus,
 } from "../types/device";
 
-const deviceService = {
-    getDevices: async (page: number = 0, size: number = 10) => {
-        return api.get<Page<DeviceDTO>>("/devices", {
-            params: { page, size },
-        });
+export type PaginationParams = {
+    page?: number;
+    size?: number;
+    status?: DeviceStatus;
+    location?: DeviceLocation;
+    serialNumber?: string;
+};
+
+
+export const deviceService = {
+    getDevices: async (params: PaginationParams = {}) => {
+        if (params.status || params.location || params.serialNumber) {
+            return deviceService.searchDevices(params, params.page, params.size);
+        }
+        return api.get<Page<DeviceDTO>>("/devices", { params });
     },
 
     createDevice: async (data: DeviceCreateDTO) => {
@@ -42,7 +54,6 @@ const deviceService = {
         page: number = 0,
         size: number = 10
     ) => {
-        // GET /devices/search – search devices with pagination
         return api.get<Page<DeviceDTO>>("/devices/search", {
             params: { ...params, page, size },
         });

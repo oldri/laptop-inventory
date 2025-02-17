@@ -5,7 +5,7 @@ import {
     WarrantyDTO,
     WarrantyCreateDTO,
 } from "../types/device";
-import deviceService from "../services/device.service";
+import deviceService, { PaginationParams } from "../services/device.service";
 
 const calculateWarrantyStatus = (
     start: string,
@@ -25,17 +25,29 @@ const convertWarranty = (warranty: any): WarrantyDTO => ({
     status: calculateWarrantyStatus(warranty.startDate, warranty.endDate),
 });
 
+// In deviceSlice.ts
 export const fetchDevices = createAsyncThunk(
     "devices/fetchDevices",
-    async (_, { rejectWithValue }) => {
+    async (params: PaginationParams = {}, { rejectWithValue }) => {
         try {
-            const response = await deviceService.getDevices();
-            return response.data; // Return only the data
+            // If any filtering parameter is present, use the search endpoint.
+            const hasFilters =
+                !!params.status || !!params.location || !!params.serialNumber;
+            const response = hasFilters
+                ? await deviceService.searchDevices(
+                    {
+                        status: params.status,
+                        location: params.location,
+                        serialNumber: params.serialNumber,
+                    },
+                    params.page ?? 0,
+                    params.size ?? 10
+                )
+                : await deviceService.getDevices({ page: params.page, size: params.size });
+            return response.data;
         } catch (error) {
             return rejectWithValue(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to fetch devices"
+                error instanceof Error ? error.message : "Failed to fetch devices"
             );
         }
     }

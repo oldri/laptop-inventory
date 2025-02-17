@@ -3,16 +3,34 @@ import {
     DeviceRequestDTO,
     DeviceRequestCreateDTO,
     RequestStatus,
+    RequestType,
+    RequestPriority,
 } from "../types/deviceRequest";
 import deviceRequestService from "../services/deviceRequest.service";
 
 // Async Thunks
 export const fetchDeviceRequests = createAsyncThunk(
     "deviceRequests/fetchDeviceRequests",
-    async (_, { rejectWithValue }) => {
+    async (
+        params: {
+            page?: number;
+            size?: number;
+            type?: RequestType;
+            status?: RequestStatus;
+            priority?: RequestPriority;
+        } = {},
+        { rejectWithValue }
+    ) => {
         try {
-            const response = await deviceRequestService.getDeviceRequests();
-            return response.data; // Return only the data
+            const response = await deviceRequestService.getDeviceRequests(params);
+            return {
+                ...response.data,
+                filters: {
+                    type: params.type,
+                    status: params.status,
+                    priority: params.priority,
+                },
+            };
         } catch (error) {
             return rejectWithValue(
                 error instanceof Error
@@ -85,7 +103,6 @@ export const deleteDeviceRequest = createAsyncThunk(
     }
 );
 
-// Slice State
 interface DeviceRequestState {
     requests: {
         content: DeviceRequestDTO[];
@@ -94,8 +111,14 @@ interface DeviceRequestState {
         pageNumber: number;
         pageSize: number;
     };
+    filters: {
+        type?: RequestType;
+        status?: RequestStatus;
+        priority?: RequestPriority;
+    };
     loading: boolean;
     error: string | null;
+    lastPage: number;
 }
 
 const initialState: DeviceRequestState = {
@@ -106,8 +129,10 @@ const initialState: DeviceRequestState = {
         pageNumber: 0,
         pageSize: 10,
     },
+    filters: {},
     loading: false,
     error: null,
+    lastPage: 0,
 };
 
 // Slice
@@ -128,6 +153,8 @@ const deviceRequestSlice = createSlice({
             })
             .addCase(fetchDeviceRequests.fulfilled, (state, action) => {
                 state.requests = action.payload;
+                state.filters = action.payload.filters;
+                state.lastPage = action.payload.pageNumber;
                 state.loading = false;
             })
             .addCase(fetchDeviceRequests.rejected, (state, action) => {

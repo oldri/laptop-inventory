@@ -51,10 +51,12 @@ public class DeviceRequest {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private RequestType type; // NEW_DEVICE or DEVICE_ASSIGNMENT
+    @Builder.Default
+    private RequestType type = RequestType.NEW_DEVICE; // NEW_DEVICE or DEVICE_ASSIGNMENT
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private RequestStatus status = RequestStatus.PENDING; // Default to PENDING
 
     @ManyToOne
@@ -73,12 +75,15 @@ public class DeviceRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority", length = 20, nullable = false)
+    @Builder.Default
     private RequestPriority priority = RequestPriority.MEDIUM;
 
     @Column(name = "create_time", nullable = false, updatable = false)
-    private LocalDateTime createTime = LocalDateTime.now();
+    @Builder.Default
+    private final LocalDateTime createTime = LocalDateTime.now();
 
     @Column(name = "update_time", nullable = false)
+    @Builder.Default
     private LocalDateTime updateTime = LocalDateTime.now();
 
     @PreUpdate

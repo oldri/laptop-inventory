@@ -32,29 +32,54 @@ const DeviceRequestList = () => {
         (state: RootState) => state.deviceRequests
     );
 
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [selectedRequest, setSelectedRequest] =
-        useState<DeviceRequestDTO | null>(null);
+    // Pagination state: default to page 0; pageSize is read from the response.
+    const [currentPage, setCurrentPage] = useState(0);
+    const pageSize = requests.pageSize || 10;
+
+    // Filter parameters state
     const [searchParams, setSearchParams] = useState<{
         type?: RequestType;
         status?: RequestStatus;
         priority?: RequestPriority;
     }>({});
 
-    useEffect(() => {
-        dispatch(fetchDeviceRequests());
-    }, [dispatch]);
+    // Modal and selected request state
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedRequest, setSelectedRequest] =
+        useState<DeviceRequestDTO | null>(null);
 
-    const filteredRequests = requests.content.filter((request) => {
-        const matchesType =
-            !searchParams.type || request.type === searchParams.type;
-        const matchesStatus =
-            !searchParams.status || request.status === searchParams.status;
-        const matchesPriority =
-            !searchParams.priority ||
-            request.priority === searchParams.priority;
-        return matchesType && matchesStatus && matchesPriority;
-    });
+    // Fetch device requests from the server whenever currentPage, pageSize, or searchParams change.
+    useEffect(() => {
+        dispatch(
+            fetchDeviceRequests({
+                page: currentPage,
+                size: pageSize,
+                ...searchParams,
+            })
+        );
+    }, [dispatch, currentPage, pageSize, searchParams]);
+
+    // Modified filter handling
+    const handleFilterChange = (newParams: Partial<{
+        type?: RequestType;
+        status?: RequestStatus;
+        priority?: RequestPriority;
+    }>) => {
+        setCurrentPage(0); // Reset to first page
+        setSearchParams(prev => ({
+            ...prev,
+            ...newParams
+        }));
+    };
+
+    const handleClearFilters = () => {
+        setCurrentPage(0);
+        setSearchParams({});
+    };
+
+
+    // Displayed requests are directly from the server response, as filtering is handled server-side.
+    const displayedRequests = requests.content;
 
     const getStatusBadgeClass = (status: RequestStatus) => {
         const baseClass = "px-3 py-1 rounded-full text-sm font-medium";
@@ -111,13 +136,19 @@ const DeviceRequestList = () => {
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">
-                    Device Requests
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900">Device Requests</h1>
                 <div className="flex gap-4">
                     <button
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                        onClick={() => dispatch(fetchDeviceRequests())}
+                        onClick={() =>
+                            dispatch(
+                                fetchDeviceRequests({
+                                    page: currentPage,
+                                    size: pageSize,
+                                    ...searchParams,
+                                })
+                            )
+                        }
                     >
                         <RefreshCw className="w-4 h-4" />
                         Refresh
@@ -139,16 +170,14 @@ const DeviceRequestList = () => {
                 </Alert>
             )}
 
+            {/* Filter controls */}
             <div className="mb-6 flex gap-4">
                 <select
                     className="border rounded-lg px-3 py-2 bg-white"
                     value={searchParams.type || ""}
-                    onChange={(e) =>
-                        setSearchParams((prev) => ({
-                            ...prev,
-                            type: (e.target.value as RequestType) || undefined,
-                        }))
-                    }
+                    onChange={(e) => handleFilterChange({
+                        type: (e.target.value as RequestType) || undefined
+                    })}
                 >
                     <option value="">All Types</option>
                     <option value="NEW_DEVICE">New Device</option>
@@ -157,13 +186,9 @@ const DeviceRequestList = () => {
                 <select
                     className="border rounded-lg px-3 py-2 bg-white"
                     value={searchParams.status || ""}
-                    onChange={(e) =>
-                        setSearchParams((prev) => ({
-                            ...prev,
-                            status:
-                                (e.target.value as RequestStatus) || undefined,
-                        }))
-                    }
+                    onChange={(e) => handleFilterChange({
+                        status: (e.target.value as RequestStatus) || undefined
+                    })}
                 >
                     <option value="">All Statuses</option>
                     <option value="PENDING">Pending</option>
@@ -173,14 +198,9 @@ const DeviceRequestList = () => {
                 <select
                     className="border rounded-lg px-3 py-2 bg-white"
                     value={searchParams.priority || ""}
-                    onChange={(e) =>
-                        setSearchParams((prev) => ({
-                            ...prev,
-                            priority:
-                                (e.target.value as RequestPriority) ||
-                                undefined,
-                        }))
-                    }
+                    onChange={(e) => handleFilterChange({
+                        priority: (e.target.value as RequestPriority) || undefined
+                    })}
                 >
                     <option value="">All Priorities</option>
                     <option value="LOW">Low</option>
@@ -189,13 +209,16 @@ const DeviceRequestList = () => {
                     <option value="URGENT">Urgent</option>
                 </select>
                 <button
-                    className="bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                    onClick={() => setSearchParams({})}
+                    onClick={handleClearFilters}
+                    disabled={loading}
+                    className={`bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${loading ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                 >
                     Clear Filters
                 </button>
             </div>
 
+            {/* Device Requests Table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <table className="min-w-full">
                     <thead className="bg-gray-50">
@@ -220,14 +243,11 @@ const DeviceRequestList = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? (
                             <tr>
-                                <td
-                                    colSpan={5}
-                                    className="px-6 py-4 text-center"
-                                >
+                                <td colSpan={5} className="px-6 py-4 text-center">
                                     <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-500" />
                                 </td>
                             </tr>
-                        ) : filteredRequests.length === 0 ? (
+                        ) : displayedRequests.length === 0 ? (
                             <tr>
                                 <td
                                     colSpan={5}
@@ -237,11 +257,8 @@ const DeviceRequestList = () => {
                                 </td>
                             </tr>
                         ) : (
-                            filteredRequests.map((request) => (
-                                <tr
-                                    key={request.id}
-                                    className="hover:bg-gray-50"
-                                >
+                            displayedRequests.map((request) => (
+                                <tr key={request.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
                                             <span className="font-medium text-gray-900">
@@ -250,26 +267,17 @@ const DeviceRequestList = () => {
                                                     : `Assign Device: ${request.device?.modelName}`}
                                             </span>
                                             <span className="text-sm text-gray-500">
-                                                Requested on:{" "}
-                                                {request.requestedDate}
+                                                Requested on: {request.requestedDate}
                                             </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span
-                                            className={getStatusBadgeClass(
-                                                request.status
-                                            )}
-                                        >
+                                        <span className={getStatusBadgeClass(request.status)}>
                                             {request.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span
-                                            className={getPriorityBadgeClass(
-                                                request.priority
-                                            )}
-                                        >
+                                        <span className={getPriorityBadgeClass(request.priority)}>
                                             {request.priority}
                                         </span>
                                     </td>
@@ -287,9 +295,7 @@ const DeviceRequestList = () => {
                                     <td className="px-6 py-4">
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() =>
-                                                    setSelectedRequest(request)
-                                                }
+                                                onClick={() => setSelectedRequest(request)}
                                                 className="text-blue-600 hover:text-blue-800"
                                                 title="View details"
                                             >
@@ -299,10 +305,7 @@ const DeviceRequestList = () => {
                                                 <>
                                                     <button
                                                         onClick={() =>
-                                                            handleUpdateStatus(
-                                                                request.id,
-                                                                "APPROVED"
-                                                            )
+                                                            handleUpdateStatus(request.id, "APPROVED")
                                                         }
                                                         className="text-green-600 hover:text-green-800"
                                                         title="Approve request"
@@ -325,11 +328,7 @@ const DeviceRequestList = () => {
                                                 </>
                                             )}
                                             <button
-                                                onClick={() =>
-                                                    handleDeleteRequest(
-                                                        request.id
-                                                    )
-                                                }
+                                                onClick={() => handleDeleteRequest(request.id)}
                                                 className="text-red-600 hover:text-red-800"
                                                 title="Delete request"
                                             >
@@ -344,11 +343,43 @@ const DeviceRequestList = () => {
                 </table>
             </div>
 
+            {/* Pagination Controls */}
+            <div className="mt-4 flex items-center justify-between px-6 py-3 bg-white border-t">
+                <div className="text-sm text-gray-500">
+                    Showing {displayedRequests.length} of {requests.totalElements} requests
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 0}
+                        className="px-3 py-1 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    {Array.from({ length: requests.totalPages }, (_, i) => (
+                        <button
+                            key={i}
+                            aria-label={`Go to page ${i + 1}`}
+                            onClick={() => setCurrentPage(i)}
+                            className={`px-3 py-1 rounded-lg border ${currentPage === i ? "bg-blue-500 text-white" : "hover:bg-gray-50"
+                                }`}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage >= requests.totalPages - 1}
+                        className="px-3 py-1 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+
             {/* Create Request Modal */}
             {showCreateModal && (
-                <CreateDeviceRequest
-                    onClose={() => setShowCreateModal(false)}
-                />
+                <CreateDeviceRequest onClose={() => setShowCreateModal(false)} />
             )}
 
             {/* Request Details Modal */}

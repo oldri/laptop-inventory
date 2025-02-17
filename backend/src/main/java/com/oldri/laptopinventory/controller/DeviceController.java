@@ -23,7 +23,7 @@ import com.oldri.laptopinventory.model.enums.DeviceStatus;
 import com.oldri.laptopinventory.security.utils.RoleUtility;
 import com.oldri.laptopinventory.service.DeviceService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -83,7 +83,11 @@ public class DeviceController {
         if (!RoleUtility.isSuperAdminOrAdmin()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(deviceService.createDevice(dto));
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(deviceService.createDevice(dto));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating device");
+        }
     }
 
     @PutMapping("/{id}")

@@ -1,13 +1,10 @@
 package com.oldri.laptopinventory.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.oldri.laptopinventory.controller.DeviceRequestController;
 import com.oldri.laptopinventory.dto.device.DeviceDTO;
 import com.oldri.laptopinventory.dto.request.DeviceRequestCreateDTO;
 import com.oldri.laptopinventory.dto.request.DeviceRequestDTO;
@@ -16,6 +13,7 @@ import com.oldri.laptopinventory.exception.ResourceNotFoundException;
 import com.oldri.laptopinventory.model.Device;
 import com.oldri.laptopinventory.model.DeviceRequest;
 import com.oldri.laptopinventory.model.User;
+import com.oldri.laptopinventory.model.enums.RequestPriority;
 import com.oldri.laptopinventory.model.enums.RequestStatus;
 import com.oldri.laptopinventory.model.enums.RequestType;
 import com.oldri.laptopinventory.repository.DeviceRepository;
@@ -31,22 +29,16 @@ public class DeviceRequestService {
     private final DeviceRequestRepository deviceRequestRepository;
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
-    private static final Logger logger = LoggerFactory.getLogger(DeviceRequestController.class);
 
     @Transactional(readOnly = true)
-    public Page<DeviceRequestDTO> getAllDeviceRequests(Pageable pageable) {
-        // Log the method call and parameters
-        logger.info("Fetching all device requests with pageable: {}", pageable);
-
+    public Page<DeviceRequestDTO> getAllDeviceRequests(RequestType type, RequestStatus status, RequestPriority priority,
+            Pageable pageable) {
         try {
-            Page<DeviceRequestDTO> deviceRequests = deviceRequestRepository.findAll(pageable).map(this::convertToDTO);
-            // Log successful data retrieval
-            logger.info("Successfully fetched device requests");
-            return deviceRequests;
+            Page<DeviceRequest> deviceRequests = deviceRequestRepository.findAllByFilters(type, status, priority,
+                    pageable);
+            return deviceRequests.map(this::convertToDTO);
         } catch (Exception e) {
-            // Log the exception
-            logger.error("An error occurred while fetching device requests", e);
-            throw new RuntimeException("An unexpected error occurred", e);
+            throw new RuntimeException("Error fetching device requests", e);
         }
     }
 

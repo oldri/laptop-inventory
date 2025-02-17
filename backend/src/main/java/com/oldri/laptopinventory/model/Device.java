@@ -59,6 +59,7 @@ public class Device {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private DeviceStatus status = DeviceStatus.AVAILABLE;
 
     @ManyToOne
@@ -66,6 +67,7 @@ public class Device {
     private User assignedUser;
 
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Warranty> warranties = new ArrayList<>();
 
     @Column(name = "purchase_date")
@@ -74,16 +76,20 @@ public class Device {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "condition", length = 20, nullable = false)
+    @Builder.Default
     private DeviceCondition condition = DeviceCondition.NEW;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "location", length = 20, nullable = false)
+    @Builder.Default
     private DeviceLocation location = DeviceLocation.WAREHOUSE;
 
     @Column(name = "create_time", nullable = false, updatable = false)
-    private LocalDateTime createTime = LocalDateTime.now();
+    @Builder.Default
+    private final LocalDateTime createTime = LocalDateTime.now();
 
     @Column(name = "update_time", nullable = false)
+    @Builder.Default
     private LocalDateTime updateTime = LocalDateTime.now();
 
     @PreUpdate

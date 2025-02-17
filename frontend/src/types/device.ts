@@ -90,3 +90,15 @@ export interface Page<T> {
     pageNumber: number;
     pageSize: number;
 }
+
+export interface DeviceState {
+    devices: {
+        content: DeviceDTO[];
+        totalPages: number;
+        totalElements: number;
+        pageNumber: number;
+        pageSize: number;
+    };
+    loading: boolean;
+    error: string | null;
+}

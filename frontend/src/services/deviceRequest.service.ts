@@ -2,19 +2,29 @@ import api from "./api";
 import {
     DeviceRequestDTO,
     DeviceRequestCreateDTO,
+    RequestType,
+    RequestStatus,
+    RequestPriority,
 } from "../types/deviceRequest";
 import { Page } from "../types/device";
-import { RequestStatus } from "../types/deviceRequest";
+
+export type DeviceRequestPaginationParams = {
+    page?: number;
+    size?: number;
+    type?: RequestType;
+    status?: RequestStatus;
+    priority?: RequestPriority;
+};
 
 const deviceRequestService = {
     getDeviceRequestById: async (id: number) => {
         return api.get<DeviceRequestDTO>(`/device-requests/${id}`);
     },
-    
-    getDeviceRequests: async (page: number = 0, size: number = 10) => {
-        // GET /device-requests – retrieve the list of device requests with pagination
+
+    getDeviceRequests: async (params: DeviceRequestPaginationParams = {}) => {
+        // GET /device-requests – retrieve the list of device requests with pagination and filtering
         return api.get<Page<DeviceRequestDTO>>("/device-requests", {
-            params: { page, size },
+            params
         });
     },
 

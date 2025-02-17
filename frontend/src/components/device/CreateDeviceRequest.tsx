@@ -28,7 +28,7 @@ const CreateDeviceRequest = ({ onClose }: { onClose: () => void }) => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        dispatch(fetchDevices());
+        dispatch(fetchDevices({}));
     }, [dispatch]);
 
     const handleSubmit = async (e: React.FormEvent) => {

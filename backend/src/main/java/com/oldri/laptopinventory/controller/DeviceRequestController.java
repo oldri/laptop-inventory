@@ -1,5 +1,6 @@
 package com.oldri.laptopinventory.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,41 +14,38 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oldri.laptopinventory.dto.request.DeviceRequestCreateDTO;
+import com.oldri.laptopinventory.dto.request.DeviceRequestDTO;
+import com.oldri.laptopinventory.model.enums.RequestPriority;
 import com.oldri.laptopinventory.model.enums.RequestStatus;
+import com.oldri.laptopinventory.model.enums.RequestType;
 import com.oldri.laptopinventory.security.utils.RoleUtility;
 import com.oldri.laptopinventory.service.DeviceRequestService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import lombok.RequiredArgsConstructor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/device-requests")
 @RequiredArgsConstructor
 public class DeviceRequestController {
     private final DeviceRequestService deviceRequestService;
-    private static final Logger logger = LoggerFactory.getLogger(DeviceRequestController.class);
 
     @GetMapping
-    public ResponseEntity<?> getAllDeviceRequests(Pageable pageable) {
-        // Log the method call and parameters
-        logger.info("Fetching all device requests with pageable: {}", pageable);
+    public ResponseEntity<?> getAllDeviceRequests(
+            @RequestParam(required = false) RequestType type,
+            @RequestParam(required = false) RequestStatus status,
+            @RequestParam(required = false) RequestPriority priority,
+            Pageable pageable) {
 
         if (!RoleUtility.isSuperAdminOrAdmin()) {
-            logger.warn("Access denied: User does not have required role");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }
-
         try {
-            // Log successful data retrieval
-            logger.info("Successfully fetched device requests");
-            return ResponseEntity.ok(deviceRequestService.getAllDeviceRequests(pageable));
+            Page<DeviceRequestDTO> deviceRequests = deviceRequestService.getAllDeviceRequests(type, status, priority,
+                    pageable);
+            return ResponseEntity.ok(deviceRequests);
         } catch (Exception e) {
-            // Log the exception
-            logger.error("An error occurred while fetching device requests", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching device requests");
         }
     }
 
