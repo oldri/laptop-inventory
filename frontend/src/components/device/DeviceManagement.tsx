@@ -4,6 +4,7 @@ import {
   fetchDevices,
   assignDeviceThunk,
   getDeviceDetails,
+  deleteDeviceThunk,
 } from "../../store/deviceSlice";
 import { RootState } from "../../store";
 import type { AppDispatch } from "../../store";
@@ -21,6 +22,7 @@ import {
   Edit2,
   UserPlus,
   Shield,
+  Trash2
 } from "lucide-react";
 import { Alert, AlertDescription } from "../common/Alert";
 
@@ -42,6 +44,7 @@ const DeviceManagement = () => {
   const [userSearch, setUserSearch] = useState("");
   const [isAssigning, setIsAssigning] = useState(false);
   const [searchParams, setSearchParams] = useState<DeviceSearchParams>({});
+  const [deviceToDelete, setDeviceToDelete] = useState<DeviceDTO | null>(null);
 
   useEffect(() => {
     dispatch(fetchDevices({
@@ -318,6 +321,13 @@ const DeviceManagement = () => {
                       >
                         <Shield className="w-5 h-5" />
                       </button>
+                      <button
+                        onClick={() => setDeviceToDelete(device)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Delete device"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -344,8 +354,8 @@ const DeviceManagement = () => {
                 key={i}
                 onClick={() => setCurrentPage(i)}
                 className={`px-3 py-1 rounded-lg border ${currentPage === i
-                    ? 'bg-blue-500 text-white'
-                    : 'hover:bg-gray-50'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-50'
                   }`}
               >
                 {i + 1}
@@ -513,6 +523,45 @@ const DeviceManagement = () => {
                 onClick={() => setShowWarrantyModal(false)}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deviceToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 w-11/12 md:w-1/3">
+            <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
+            <p className="mb-4">
+              Are you sure you want to delete {deviceToDelete.modelName} (SN: {deviceToDelete.serialNumber})?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded-lg border hover:bg-gray-50"
+                onClick={() => setDeviceToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 flex items-center gap-2"
+                onClick={async () => {
+                  try {
+                    await dispatch(deleteDeviceThunk(deviceToDelete.id)).unwrap();
+                    setDeviceToDelete(null);
+                    // Refresh the list to maintain pagination consistency
+                    dispatch(fetchDevices({
+                      page: currentPage,
+                      size: pageSize,
+                      ...searchParams
+                    }));
+                  } catch (error) {
+                    console.error("Delete failed:", error);
+                  }
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
               </button>
             </div>
           </div>

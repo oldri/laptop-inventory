@@ -106,6 +106,20 @@ export const assignDeviceThunk = createAsyncThunk(
         }
     }
 );
+// Add to your existing thunks
+export const deleteDeviceThunk = createAsyncThunk(
+    "devices/deleteDevice",
+    async (id: number, { rejectWithValue }) => {
+        try {
+            await deviceService.deleteDevice(id);
+            return id; // Return the deleted device ID
+        } catch (error) {
+            return rejectWithValue(
+                error instanceof Error ? error.message : "Failed to delete device"
+            );
+        }
+    }
+);
 
 export const createWarranty = createAsyncThunk(
     "devices/createWarranty",
@@ -246,6 +260,10 @@ const deviceSlice = createSlice({
                 state.error = action.payload as string;
             })
             // Assign device
+            .addCase(assignDeviceThunk.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(assignDeviceThunk.fulfilled, (state, action) => {
                 const index = state.devices.content.findIndex(
                     (device) => device.id === action.payload.id
@@ -253,6 +271,26 @@ const deviceSlice = createSlice({
                 if (index !== -1) {
                     state.devices.content[index] = action.payload; // Update the device in the content array
                 }
+            })
+            .addCase(assignDeviceThunk.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Delete device
+            .addCase(deleteDeviceThunk.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteDeviceThunk.fulfilled, (state, action) => {
+                state.devices.content = state.devices.content.filter(
+                    device => device.id !== action.payload
+                );
+                state.devices.totalElements -= 1;
+                state.loading = false;
+            })
+            .addCase(deleteDeviceThunk.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             })
             // Create warranty
             .addCase(createWarranty.pending, (state) => {

@@ -32,31 +32,29 @@ const DeviceRequestList = () => {
         (state: RootState) => state.deviceRequests
     );
 
-    // Pagination state: default to page 0; pageSize is read from the response.
+    // State variables
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = requests.pageSize || 10;
-
-    // Filter parameters state
     const [searchParams, setSearchParams] = useState<{
         type?: RequestType;
         status?: RequestStatus;
         priority?: RequestPriority;
     }>({});
-
-    // Modal and selected request state
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [selectedRequest, setSelectedRequest] =
-        useState<DeviceRequestDTO | null>(null);
+    const [selectedRequest, setSelectedRequest] = useState<DeviceRequestDTO | null>(null);
+    const [actionState, setActionState] = useState<{
+        type: 'approve' | 'reject' | null;
+        requestId: number | null;
+        reason: string | null;
+    }>({ type: null, requestId: null, reason: '' });
+    const [processing, setProcessing] = useState(false);
 
-    // Fetch device requests from the server whenever currentPage, pageSize, or searchParams change.
     useEffect(() => {
-        dispatch(
-            fetchDeviceRequests({
-                page: currentPage,
-                size: pageSize,
-                ...searchParams,
-            })
-        );
+        dispatch(fetchDeviceRequests({
+            page: currentPage,
+            size: pageSize,
+            ...searchParams,
+        }));
     }, [dispatch, currentPage, pageSize, searchParams]);
 
     // Modified filter handling
@@ -107,21 +105,29 @@ const DeviceRequestList = () => {
         }
     };
 
-    const handleUpdateStatus = async (
-        id: number,
-        status: RequestStatus,
-        reason?: string
-    ) => {
+    const handleStatusAction = async () => {
+        if (actionState.type === 'reject' && !(actionState.reason ?? '').trim()) {
+            return;
+        }
+
+        setProcessing(true);
         try {
-            await dispatch(
-                updateDeviceRequestStatus({
-                    id,
-                    status,
-                    reasonForRejection: reason,
-                })
-            ).unwrap();
+            await dispatch(updateDeviceRequestStatus({
+                id: actionState.requestId!,
+                status: actionState.type === 'approve' ? 'APPROVED' : 'REJECTED',
+                reasonForRejection: actionState.type === 'reject' ? actionState.reason : null
+            })).unwrap();
+
+            dispatch(fetchDeviceRequests({
+                page: currentPage,
+                size: pageSize,
+                ...searchParams
+            }));
         } catch (error) {
-            console.error("Failed to update request status:", error);
+            console.error('Action failed:', error);
+        } finally {
+            setProcessing(false);
+            setActionState({ type: null, requestId: null, reason: '' });
         }
     };
 
@@ -164,9 +170,9 @@ const DeviceRequestList = () => {
             </div>
 
             {error && (
-                <Alert variant="destructive" className="mb-6">
+                <Alert variant="destructive" className="mb-6 flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription className="!mt-0">{error}</AlertDescription>
                 </Alert>
             )}
 
@@ -304,26 +310,34 @@ const DeviceRequestList = () => {
                                             {request.status === "PENDING" && (
                                                 <>
                                                     <button
-                                                        onClick={() =>
-                                                            handleUpdateStatus(request.id, "APPROVED")
-                                                        }
+                                                        onClick={() => setActionState({
+                                                            type: 'approve',
+                                                            requestId: request.id,
+                                                            reason: ''
+                                                        })}
                                                         className="text-green-600 hover:text-green-800"
-                                                        title="Approve request"
+                                                        disabled={processing}
                                                     >
-                                                        <Check className="w-5 h-5" />
+                                                        {processing && actionState.type === 'approve' ? (
+                                                            <RefreshCw className="w-5 h-5 animate-spin" />
+                                                        ) : (
+                                                            <Check className="w-5 h-5" />
+                                                        )}
                                                     </button>
                                                     <button
-                                                        onClick={() =>
-                                                            handleUpdateStatus(
-                                                                request.id,
-                                                                "REJECTED",
-                                                                "Reason for rejection"
-                                                            )
-                                                        }
+                                                        onClick={() => setActionState({
+                                                            type: 'reject',
+                                                            requestId: request.id,
+                                                            reason: ''
+                                                        })}
                                                         className="text-red-600 hover:text-red-800"
-                                                        title="Reject request"
+                                                        disabled={processing}
                                                     >
-                                                        <X className="w-5 h-5" />
+                                                        {processing && actionState.type === 'reject' ? (
+                                                            <RefreshCw className="w-5 h-5 animate-spin" />
+                                                        ) : (
+                                                            <X className="w-5 h-5" />
+                                                        )}
                                                     </button>
                                                 </>
                                             )}
@@ -331,6 +345,7 @@ const DeviceRequestList = () => {
                                                 onClick={() => handleDeleteRequest(request.id)}
                                                 className="text-red-600 hover:text-red-800"
                                                 title="Delete request"
+                                                disabled={processing}
                                             >
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
@@ -376,12 +391,83 @@ const DeviceRequestList = () => {
                     </button>
                 </div>
             </div>
+            {/* Updated Action Modal */}
+            {actionState.type && (
+                <div className="fixed inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 w-11/12 md:w-1/2">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-800">
+                                {actionState.type === 'approve' ? 'Confirm Approval' : 'Reject Request'}
+                            </h2>
 
+                            <button
+                                className="text-gray-500 hover:text-gray-700 transition-colors"
+                                onClick={() => setActionState({ type: null, requestId: null, reason: '' })}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        {actionState.type === 'reject' && (
+                            <div className="space-y-4">
+                                {(!actionState.reason || !actionState.reason.trim()) && (
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Alert variant="destructive" className="flex items-center gap-2 flex-1">
+                                            <AlertCircle className="h-4 w-4" />
+                                            <AlertDescription className="pt-0 !mt-0">Rejection reason is required</AlertDescription>
+                                        </Alert>
+                                    </div>
+                                )}
+                                <textarea
+                                    className="w-full border border-gray-300 px-4 py-2 rounded-lg"
+                                    value={actionState.reason ?? ''}
+                                    onChange={(e) => setActionState(prev => ({
+                                        ...prev,
+                                        reason: e.target.value
+                                    }))}
+                                    placeholder="Enter reason for rejection..."
+                                    rows={4}
+                                />
+
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-4 mt-6">
+                            <button
+                                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg transition-colors"
+                                onClick={() => setActionState({ type: null, requestId: null, reason: '' })}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={`px-4 py-2 text-white rounded-lg flex items-center gap-2 transition-colors ${actionState.type === 'approve'
+                                    ? 'bg-green-600 hover:bg-green-700'
+                                    : `bg-red-600 ${!(actionState.reason ?? '').trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'}`
+                                    }`}
+                                onClick={handleStatusAction}
+                                disabled={actionState.type === 'reject' && !(actionState.reason ?? '').trim()}
+                            >
+                                {processing ? (
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    actionState.type === 'approve' ? 'Approve' : 'Reject'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Create Request Modal */}
             {showCreateModal && (
                 <CreateDeviceRequest onClose={() => setShowCreateModal(false)} />
             )}
-
             {/* Request Details Modal */}
             {selectedRequest && (
                 <DeviceRequestDetails

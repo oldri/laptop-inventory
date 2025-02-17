@@ -66,7 +66,7 @@ export const updateDeviceRequestStatus = createAsyncThunk(
             id,
             status,
             reasonForRejection,
-        }: { id: number; status: RequestStatus; reasonForRejection?: string },
+        }: { id: number; status: RequestStatus; reasonForRejection?: string | null },
         { rejectWithValue }
     ) => {
         try {

@@ -36,7 +36,7 @@ const deviceRequestService = {
     updateDeviceRequestStatus: async (
         id: number,
         status: RequestStatus,
-        reasonForRejection?: string
+        reasonForRejection?: string | null
     ) => {
         // PUT /device-requests/:id/status – update the status of a device request
         return api.put<DeviceRequestDTO>(`/device-requests/${id}/status`, {

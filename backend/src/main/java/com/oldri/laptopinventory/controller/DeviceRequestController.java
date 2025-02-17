@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oldri.laptopinventory.dto.request.DeviceRequestCreateDTO;
 import com.oldri.laptopinventory.dto.request.DeviceRequestDTO;
+import com.oldri.laptopinventory.dto.request.DeviceRequestStatusUpdateDTO;
 import com.oldri.laptopinventory.model.enums.RequestPriority;
 import com.oldri.laptopinventory.model.enums.RequestStatus;
 import com.oldri.laptopinventory.model.enums.RequestType;
@@ -68,12 +69,14 @@ public class DeviceRequestController {
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateDeviceRequestStatus(
             @PathVariable Long id,
-            @RequestParam RequestStatus status,
-            @RequestParam(required = false) String reasonForRejection) {
+            @RequestBody DeviceRequestStatusUpdateDTO updateDTO) {
         if (!RoleUtility.isSuperAdmin()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }
-        return ResponseEntity.ok(deviceRequestService.updateDeviceRequestStatus(id, status, reasonForRejection));
+        return ResponseEntity.ok(deviceRequestService.updateDeviceRequestStatus(
+                id,
+                updateDTO.getStatus(),
+                updateDTO.getReasonForRejection()));
     }
 
     @DeleteMapping("/{id}")

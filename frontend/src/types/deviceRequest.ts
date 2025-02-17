@@ -25,7 +25,7 @@ export interface DeviceRequestDTO {
     device?: DeviceDTO;
     quantity?: number;
     notes?: string;
-    reasonForRejection?: string;
+    reasonForRejection?: string | null;
     requestedDate: string;
     createTime: string; // Ensure this is included
     updateTime: string; // Ensure this is included
