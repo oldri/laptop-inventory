@@ -1,9 +1,10 @@
-package com.oldri.laptopinventory.controller.auth;
+package com.oldri.laptopinventory.controller;
 
 import com.oldri.laptopinventory.dto.auth.AuthenticationRequest;
 import com.oldri.laptopinventory.dto.auth.AuthenticationResponse;
 import com.oldri.laptopinventory.dto.user.UserCreateDTO;
-import com.oldri.laptopinventory.service.auth.AuthenticationService;
+import com.oldri.laptopinventory.service.AuthenticationService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

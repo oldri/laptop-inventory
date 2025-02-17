@@ -1,4 +1,4 @@
-package com.oldri.laptopinventory.controller.device;
+package com.oldri.laptopinventory.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,7 @@ import com.oldri.laptopinventory.exception.ResourceNotFoundException;
 import com.oldri.laptopinventory.model.enums.DeviceLocation;
 import com.oldri.laptopinventory.model.enums.DeviceStatus;
 import com.oldri.laptopinventory.security.utils.RoleUtility;
-import com.oldri.laptopinventory.service.device.DeviceService;
+import com.oldri.laptopinventory.service.DeviceService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;

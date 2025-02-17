@@ -4,8 +4,8 @@ import {
     DeviceCreateDTO,
     WarrantyDTO,
     WarrantyCreateDTO,
-} from "../../types/device";
-import deviceService from "../../services/device.service";
+} from "../types/device";
+import deviceService from "../services/device.service";
 
 const calculateWarrantyStatus = (
     start: string,
@@ -30,8 +30,6 @@ export const fetchDevices = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await deviceService.getDevices();
-            console.log("response", response);
-
             return response.data; // Return only the data
         } catch (error) {
             return rejectWithValue(
@@ -148,8 +146,6 @@ export const getDeviceDetails = createAsyncThunk(
     async (id: number, { rejectWithValue }) => {
         try {
             const response = await deviceService.getDeviceDetails(id);
-            console.log("response", response);
-
             return response.data; // Return only the data
         } catch (error) {
             return rejectWithValue(

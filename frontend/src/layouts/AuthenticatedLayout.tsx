@@ -1,8 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, Outlet } from "react-router-dom";
-import { logout } from "../store/auth/authSlice";
+import { useNavigate, Outlet, Link } from "react-router-dom";
+import { logout } from "../store/authSlice";
 import authService from "../services/auth.service";
 import type { RootState } from "../store";
+import { useEffect } from "react";
 
 export const AuthenticatedLayout = () => {
     const dispatch = useDispatch();
@@ -15,27 +16,51 @@ export const AuthenticatedLayout = () => {
         navigate("/login");
     };
 
+    useEffect(() => {
+        if (!user) {
+            navigate("/login");
+        }
+    }, [user, navigate]); // Add `navigate` as a dependency
+
     if (!user) {
-        navigate("/login");
-        return null;
+        return null; // or a loading spinner, or a message
     }
 
     return (
         <div className="min-h-screen flex flex-col">
             {/* Navbar */}
-            <nav className="bg-white shadow-sm">
+            <nav className="bg-white shadow-md">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        <span className="text-lg font-semibold text-gray-900">
+                        <Link
+                            to="/"
+                            className="text-xl font-bold text-gray-800"
+                        >
                             Laptop Inventory
-                        </span>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-gray-700">
+                        </Link>
+                        <div className="flex items-center space-x-6">
+                            {/* Navigation Links */}
+                            <Link
+                                to="/device-management"
+                                className="text-blue-500 hover:bg-blue-100 px-3 py-2 rounded-md transition-colors duration-200"
+                            >
+                                Devices
+                            </Link>
+                            {(user?.role === "ROLE_SUPER_ADMIN" ||
+                                user?.role === "ROLE_ADMIN") && (
+                                <Link
+                                    to="/device-requests"
+                                    className="text-blue-500 hover:bg-blue-100 px-3 py-2 rounded-md transition-colors duration-200"
+                                >
+                                    Requests
+                                </Link>
+                            )}
+                            <span className="text-gray-600">
                                 Welcome, {user?.firstName} {user?.lastName}
                             </span>
                             <button
                                 onClick={handleLogout}
-                                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md shadow"
+                                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md shadow transition-colors duration-200"
                             >
                                 Logout
                             </button>

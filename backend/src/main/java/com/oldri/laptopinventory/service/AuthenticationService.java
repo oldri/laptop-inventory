@@ -1,4 +1,4 @@
-package com.oldri.laptopinventory.service.auth;
+package com.oldri.laptopinventory.service;
 
 import com.oldri.laptopinventory.dto.auth.AuthenticationRequest;
 import com.oldri.laptopinventory.dto.auth.AuthenticationResponse;

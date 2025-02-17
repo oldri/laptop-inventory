@@ -1,4 +1,4 @@
-package com.oldri.laptopinventory.service.device;
+package com.oldri.laptopinventory.service;
 
 import java.util.List;
 

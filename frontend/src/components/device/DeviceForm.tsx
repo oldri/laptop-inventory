@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import {
     createDevice,
     updateDeviceThunk,
-} from "../../store/device/deviceSlice";
+} from "../../store/deviceSlice";
 import { DeviceCreateDTO, DeviceDTO } from "../../types/device";
 import { FormField, FormActions } from "../common/FormField";
 import type { AppDispatch } from "../../store";

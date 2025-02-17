@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { createWarranty, updateWarranty } from "../../store/device/deviceSlice";
+import { createWarranty, updateWarranty } from "../../store/deviceSlice";
 import { WarrantyCreateDTO, WarrantyDTO } from "../../types/device";
 import { FormField, FormActions } from "../common/FormField";
 import type { AppDispatch } from "../../store";

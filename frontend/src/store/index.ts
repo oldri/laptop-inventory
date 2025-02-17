@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./auth/authSlice";
-import deviceReducer from "./device/deviceSlice";
+import authReducer from "./authSlice";
+import deviceReducer from "./deviceSlice";
+import deviceRequestReducer from "./deviceRequestSlice";
 
 const store = configureStore({
     reducer: {
         auth: authReducer,
         devices: deviceReducer,
+        deviceRequests: deviceRequestReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

@@ -4,7 +4,7 @@ import {
     fetchDevices,
     assignDeviceThunk,
     getDeviceDetails,
-} from "../../store/device/deviceSlice";
+} from "../../store/deviceSlice";
 import { RootState } from "../../store";
 import type { AppDispatch } from "../../store";
 import {

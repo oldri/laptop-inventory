@@ -5,20 +5,11 @@ import {
     WarrantyDTO,
     WarrantyCreateDTO,
     DeviceSearchParams,
+    Page,
 } from "../types/device";
-
-// Define the structure of a paginated response
-interface Page<T> {
-    content: T[];
-    totalPages: number;
-    totalElements: number;
-    pageNumber: number;
-    pageSize: number;
-}
 
 const deviceService = {
     getDevices: async (page: number = 0, size: number = 10) => {
-        // GET /devices – retrieve the list of devices with pagination
         return api.get<Page<DeviceDTO>>("/devices", {
             params: { page, size },
         });

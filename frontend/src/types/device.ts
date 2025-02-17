@@ -1,4 +1,3 @@
-// Device-related types
 export type DeviceStatus = "AVAILABLE" | "ASSIGNED" | "MAINTENANCE";
 export type DeviceLocation =
     | "WAREHOUSE"
@@ -82,4 +81,12 @@ export interface AuthRequest {
 export interface AuthResponse {
     token: string;
     user: User;
+}
+
+export interface Page<T> {
+    content: T[];
+    totalPages: number;
+    totalElements: number;
+    pageNumber: number;
+    pageSize: number;
 }
