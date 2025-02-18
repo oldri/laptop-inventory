@@ -451,7 +451,7 @@ The **Device Management System** is a web-based platform designed to help organi
 │ │ │ │ ├── V3**create_warranties_table.sql
 │ │ │ │ ├── V4**create_device_requests_table.sql
 │ │ │ │ ├── V5**insert_super_admin_user.sql
-│ │ │ │ ├── V6**insert_dummy_data_into_devices_table.sql
+│ │ │ │ ├── V6**insert_device_data_into_devices_table.sql
 │ │ │ │ ├── V7**insert_warranty_data_into_warranty_table.sql
 │ │ │ │ └── V8**insert_device_request_data_into_device_requests_table.sql
 │ │ │ │ ├── application.properties # Application properties

@@ -1,3 +1,6 @@
+import { DeviceDTO } from "./device";
+import { UserRole } from "./user";
+
 export interface AuthRequest {
     username: string;
     password: string;
@@ -10,9 +13,10 @@ export interface User {
     firstName: string;
     lastName: string;
     phoneNumber: string;
-    role: "ROLE_SUPER_ADMIN" | "ROLE_ADMIN" | "ROLE_EMPLOYEE";
+    role: UserRole;
     department: string;
     isActive: boolean;
+    assignedDevices: DeviceDTO[];
 }
 
 export interface AuthResponse {

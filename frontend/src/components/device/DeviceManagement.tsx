@@ -156,9 +156,9 @@ const DeviceManagement = () => {
       </div>
 
       {error && (
-        <Alert variant="destructive" className="mb-6">
+        <Alert variant="destructive" className="mb-6 flex items-center gap-2">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription className="!mt-0">{error}</AlertDescription>
         </Alert>
       )}
 

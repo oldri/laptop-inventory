@@ -17,6 +17,7 @@ export interface User {
     role: "ROLE_SUPER_ADMIN" | "ROLE_ADMIN" | "ROLE_EMPLOYEE";
     department: string;
     isActive: boolean;
+    assigneeDevices?: DeviceDTO[];
 }
 
 // DeviceCreateDTO for creating a new device

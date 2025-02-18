@@ -1,5 +1,8 @@
 package com.oldri.laptopinventory.dto.user;
 
+import java.util.List;
+
+import com.oldri.laptopinventory.dto.device.DeviceDTO;
 import com.oldri.laptopinventory.model.enums.Department;
 import com.oldri.laptopinventory.model.enums.UserRole;
 
@@ -22,5 +25,6 @@ public class UserDTO {
     private UserRole role;
     private Department department;
     private Boolean isActive;
+    private List<DeviceDTO> assignedDevices;
     // Exclude password for security
 }

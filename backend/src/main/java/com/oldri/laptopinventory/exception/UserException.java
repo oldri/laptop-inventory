@@ -1,16 +1,16 @@
 package com.oldri.laptopinventory.exception;
 
-public class AuthenticationException extends RuntimeException {
-
+public class UserException extends RuntimeException {
     public enum ErrorType {
-        INVALID_CREDENTIALS,
-        INVALID_PASSWORD,
-        ACCOUNT_DISABLED
+        USER_NOT_FOUND,
+        USERNAME_ALREADY_EXISTS,
+        EMAIL_ALREADY_EXISTS,
+        INVALID_USER_OPERATION
     }
 
     private final ErrorType errorType;
 
-    public AuthenticationException(ErrorType errorType, String message) {
+    public UserException(ErrorType errorType, String message) {
         super(message);
         this.errorType = errorType;
     }

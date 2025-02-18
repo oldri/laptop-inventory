@@ -13,9 +13,11 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // GlobalExceptionHandler.java
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuthenticationException(
             AuthenticationException ex, WebRequest request) {
+        // Remove USERNAME_ALREADY_EXISTS and USER_NOT_FOUND from this handler
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", ex.getMessage());
@@ -23,18 +25,41 @@ public class GlobalExceptionHandler {
 
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        // Map error types to specific HTTP status codes
         switch (ex.getErrorType()) {
             case INVALID_CREDENTIALS:
-            case USER_NOT_FOUND:
                 status = HttpStatus.UNAUTHORIZED;
+                break;
+            case INVALID_PASSWORD:
+                status = HttpStatus.BAD_REQUEST;
+                break;
+            case ACCOUNT_DISABLED:
+                status = HttpStatus.FORBIDDEN;
+                break;
+        }
+
+        return new ResponseEntity<>(body, status);
+    }
+
+    @ExceptionHandler(UserException.class)
+    public ResponseEntity<Object> handleUserException(
+            UserException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("message", ex.getMessage());
+        body.put("errorType", ex.getErrorType());
+
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        switch (ex.getErrorType()) {
+            case USER_NOT_FOUND:
+                status = HttpStatus.NOT_FOUND;
                 break;
             case USERNAME_ALREADY_EXISTS:
             case EMAIL_ALREADY_EXISTS:
                 status = HttpStatus.CONFLICT;
                 break;
-            case INVALID_PASSWORD:
-                status = HttpStatus.BAD_REQUEST;
+            case INVALID_USER_OPERATION:
+                status = HttpStatus.FORBIDDEN;
                 break;
         }
 

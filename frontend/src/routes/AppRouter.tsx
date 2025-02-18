@@ -11,13 +11,14 @@ import { ProtectedRoute } from "../routes/ProtectedRoute";
 import DeviceManagement from "../components/device/DeviceManagement";
 import DeviceRequestList from "../components/device/DeviceRequestList";
 import DeviceRequestDetails from "../components/device/DeviceRequestDetails";
-import { ReactNode, useEffect, useState } from "react";
-import React from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { DeviceRequestDTO } from "../types/deviceRequest";
 import { RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "../components/common/Alert";
 import deviceRequestService from "../services/deviceRequest.service";
 import { Dashboard } from "../pages/Dashboard";
+import UserManagement from "../components/user/UserManagement";
+import UserProfile from "../components/user/UserProfile";
 
 export class ErrorBoundary extends React.Component<
     { children: ReactNode },
@@ -140,6 +141,26 @@ const router = createBrowserRouter([
                         </ErrorBoundary>
                     </ProtectedRoute>
                 ),
+            },
+            {
+                path: "user-management",
+                element: (
+                    <ProtectedRoute allowedRoles={["ROLE_SUPER_ADMIN"]}>
+                        <ErrorBoundary>
+                            <UserManagement />
+                        </ErrorBoundary>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "profile",
+                element: (
+                    <ProtectedRoute>
+                        <ErrorBoundary>
+                            <UserProfile />
+                        </ErrorBoundary>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "device-requests",

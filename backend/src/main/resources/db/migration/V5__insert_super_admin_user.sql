@@ -20,7 +20,7 @@ INSERT INTO users (
     'User',
     '+1234567891',
     'ROLE_ADMIN',
-    'ADMINISTRATION',
+    'HR',
     TRUE
 ),
 (

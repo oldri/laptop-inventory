@@ -2,15 +2,16 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
 import type { ReactNode } from "react";
+import { UserRole } from "../types/user";
 
 interface ProtectedRouteProps {
     children: ReactNode;
-    allowedRoles?: Array<"ROLE_SUPER_ADMIN" | "ROLE_ADMIN" | "ROLE_EMPLOYEE">;
+    allowedRoles?: UserRole[];
 }
 
 export const ProtectedRoute = ({
     children,
-    allowedRoles,
+    allowedRoles
 }: ProtectedRouteProps) => {
     const location = useLocation();
     const { isAuthenticated, user } = useSelector(
