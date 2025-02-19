@@ -1,13 +1,19 @@
 package com.oldri.laptopinventory.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.oldri.laptopinventory.dto.device.DeviceDTO;
 import com.oldri.laptopinventory.dto.request.DeviceRequestCreateDTO;
 import com.oldri.laptopinventory.dto.request.DeviceRequestDTO;
+import com.oldri.laptopinventory.dto.request.RequestDashboardDTO;
+import com.oldri.laptopinventory.dto.request.RequestStatusCountProjection;
+import com.oldri.laptopinventory.dto.request.RequestSummaryDTO;
+import com.oldri.laptopinventory.dto.request.RequestTypeCountProjection;
 import com.oldri.laptopinventory.dto.user.UserDTO;
 import com.oldri.laptopinventory.exception.ResourceNotFoundException;
 import com.oldri.laptopinventory.model.Device;
@@ -20,7 +26,6 @@ import com.oldri.laptopinventory.repository.DeviceRepository;
 import com.oldri.laptopinventory.repository.DeviceRequestRepository;
 import com.oldri.laptopinventory.repository.UserRepository;
 import com.oldri.laptopinventory.security.utils.SecurityUtility;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -29,6 +34,7 @@ public class DeviceRequestService {
     private final DeviceRequestRepository deviceRequestRepository;
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
+    private static final String DEVICE_REQUEST_NOT_FOUND = "Device request not found";
 
     @Transactional(readOnly = true)
     public Page<DeviceRequestDTO> getAllDeviceRequests(RequestType type, RequestStatus status, RequestPriority priority,
@@ -45,7 +51,7 @@ public class DeviceRequestService {
     @Transactional(readOnly = true)
     public DeviceRequestDTO getDeviceRequestById(Long id) {
         DeviceRequest request = deviceRequestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_REQUEST_NOT_FOUND));
         return convertToDTO(request);
     }
 
@@ -82,7 +88,7 @@ public class DeviceRequestService {
     @Transactional
     public DeviceRequestDTO updateDeviceRequestStatus(Long id, RequestStatus status, String reasonForRejection) {
         DeviceRequest request = deviceRequestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_REQUEST_NOT_FOUND));
 
         if (request.getStatus() != RequestStatus.PENDING) {
             throw new IllegalStateException("Request is already processed");
@@ -98,8 +104,48 @@ public class DeviceRequestService {
     @Transactional
     public void deleteDeviceRequest(Long id) {
         DeviceRequest request = deviceRequestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(DEVICE_REQUEST_NOT_FOUND));
         deviceRequestRepository.delete(request);
+    }
+
+    @Transactional(readOnly = true)
+    public RequestDashboardDTO getRequestDashboard() {
+        // Count aggregations using projections
+        Map<RequestType, Long> typeCounts = deviceRequestRepository.countByRequestType()
+                .stream()
+                .collect(Collectors.toMap(
+                        RequestTypeCountProjection::getType,
+                        RequestTypeCountProjection::getCount));
+
+        Map<RequestStatus, Long> statusCounts = deviceRequestRepository.countByRequestStatus()
+                .stream()
+                .collect(Collectors.toMap(
+                        RequestStatusCountProjection::getStatus,
+                        RequestStatusCountProjection::getCount));
+
+        // Fetch the top 10 recent requests using the new repository method name
+        List<RequestSummaryDTO> recentRequests = deviceRequestRepository.findTop10ByOrderByCreateTimeDesc()
+                .stream()
+                .map(this::convertToSummaryDTO)
+                .collect(Collectors.toList());
+
+        return RequestDashboardDTO.builder()
+                .typeCounts(typeCounts)
+                .statusCounts(statusCounts)
+                .recentRequests(recentRequests)
+                .totalRequests(deviceRequestRepository.count())
+                .build();
+    }
+
+    private RequestSummaryDTO convertToSummaryDTO(DeviceRequest request) {
+        return RequestSummaryDTO.builder()
+                .id(request.getId())
+                .type(request.getType())
+                .status(request.getStatus())
+                .requesterEmail(request.getRequester().getEmail())
+                .createTime(request.getCreateTime())
+                .updateTime(request.getUpdateTime())
+                .build();
     }
 
     private DeviceRequestDTO convertToDTO(DeviceRequest request) {

@@ -3,6 +3,7 @@ import authReducer from "./authSlice";
 import deviceReducer from "./deviceSlice";
 import deviceRequestReducer from "./deviceRequestSlice";
 import userReducer from "./userSlice";
+import dashboardReducer from "./dashboardSlice";
 
 const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
         devices: deviceReducer,
         deviceRequests: deviceRequestReducer,
         users: userReducer,
+        dashboard: dashboardReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

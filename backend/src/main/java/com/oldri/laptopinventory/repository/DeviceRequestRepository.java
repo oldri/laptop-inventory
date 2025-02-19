@@ -1,5 +1,6 @@
 package com.oldri.laptopinventory.repository;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,7 +8,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import com.oldri.laptopinventory.dto.request.RequestStatusCountProjection;
+import com.oldri.laptopinventory.dto.request.RequestTypeCountProjection;
 import com.oldri.laptopinventory.model.Device;
 import com.oldri.laptopinventory.model.DeviceRequest;
 import com.oldri.laptopinventory.model.User;
@@ -40,4 +42,13 @@ public interface DeviceRequestRepository
                         @Param("status") RequestStatus status,
                         @Param("priority") RequestPriority priority,
                         Pageable pageable);
+
+        @Query("SELECT r.type as type, COUNT(r) as count FROM DeviceRequest r GROUP BY r.type")
+        List<RequestTypeCountProjection> countByRequestType();
+
+        @Query("SELECT r.status as status, COUNT(r) as count FROM DeviceRequest r GROUP BY r.status")
+        List<RequestStatusCountProjection> countByRequestStatus();
+
+        // Use Spring Data naming to fetch the 10 most recent requests
+        List<DeviceRequest> findTop10ByOrderByCreateTimeDesc();
 }

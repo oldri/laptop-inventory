@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { UserCreateDTO, UserDTO, UserSearchParams, UserState, UserUpdateDTO } from "../types/user";
+import { UserCreateDTO, UserState, UserUpdateDTO } from "../types/user";
 import userService, { UserPaginationParams } from "../services/user.service";
 
 // Thunks
